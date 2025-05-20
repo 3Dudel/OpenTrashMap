@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Open Trash Map</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
   <style>
     body {
       margin: 0;
@@ -72,6 +74,20 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    // 🔥 Firebase-Konfiguration (deine Daten hier eintragen!)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGpCpH_Zbeh1cFKV5a4kKFdDtylDVcfQM",
+      authDomain: "open-trash-map.firebaseapp.com",
+      databaseURL: "https://open-trash-map-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "open-trash-map",
+      storageBucket: "open-trash-map.appspot.com",
+      messagingSenderId: "337844224694",
+      appId: "1:337844224694:web:7098c52610943e615b9c17"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     const map = L.map('map').setView([51.1657, 10.4515], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap-Mitwirkende'
@@ -145,14 +161,28 @@
         alert("Bitte zuerst auf die Karte klicken.");
         return;
       }
-      const marker = L.circleMarker(ausgewaehlterLatLng, {
+
+      // Speichern in Firebase
+      const neuerMuell = {
+        lat: ausgewaehlterLatLng.lat,
+        lng: ausgewaehlterLatLng.lng,
+        timestamp: Date.now()
+      };
+      db.ref("muelleimer").push(neuerMuell);
+
+      zeigeMarker(neuerMuell);
+
+      resetRegistrierung();
+    }
+
+    function zeigeMarker(punkt) {
+      const marker = L.circleMarker([punkt.lat, punkt.lng], {
         radius: 6,
         color: 'blue',
         fillColor: 'blue',
         fillOpacity: 0.7
       }).addTo(map);
       muelleimerMarker.push(marker);
-      resetRegistrierung();
     }
 
     function abbrechen() {
@@ -178,6 +208,14 @@
       }).addTo(map);
       document.getElementById('ausgewaehlterPunkt').innerText =
         `Ausgewählt: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+    });
+
+    // Lade Marker bei Start
+    db.ref("muelleimer").once("value", snapshot => {
+      snapshot.forEach(child => {
+        const punkt = child.val();
+        zeigeMarker(punkt);
+      });
     });
   </script>
 </body>
