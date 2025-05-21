@@ -156,24 +156,35 @@
       document.getElementById('ausgewaehlterPunkt').innerText = "Noch kein Punkt gewählt.";
     }
 
-    function bestaetigePunkt() {
-      if (!ausgewaehlterLatLng) {
-        alert("Bitte zuerst auf die Karte klicken.");
-        return;
-      }
+  function bestaetigePunkt() {
+  if (!ausgewaehlterLatLng) {
+    alert("Bitte zuerst auf die Karte klicken.");
+    return;
+  }
 
-      // Speichern in Firebase
-      const neuerMuell = {
-        lat: ausgewaehlterLatLng.lat,
-        lng: ausgewaehlterLatLng.lng,
-        timestamp: Date.now()
-      };
-      db.ref("muelleimer").push(neuerMuell);
+  const letzteZeit = localStorage.getItem("letzteRegistrierung");
+  const jetzt = Date.now();
 
-      zeigeMarker(neuerMuell);
+  if (letzteZeit && jetzt - parseInt(letzteZeit) < 5 * 60 * 1000) {
+    const verbleibend = Math.ceil((5 * 60 * 1000 - (jetzt - parseInt(letzteZeit))) / 1000);
+    alert(`Bitte warte noch ${verbleibend} Sekunden, bevor du einen weiteren Mülleimer registrierst.`);
+    return;
+  }
 
-      resetRegistrierung();
-    }
+  const neuerMuell = {
+    lat: ausgewaehlterLatLng.lat,
+    lng: ausgewaehlterLatLng.lng,
+    timestamp: jetzt
+  };
+
+  db.ref("muelleimer").push(neuerMuell);
+  zeigeMarker(neuerMuell);
+
+  // Zeit merken
+  localStorage.setItem("letzteRegistrierung", jetzt.toString());
+
+  resetRegistrierung();
+}
 
     function zeigeMarker(punkt) {
       const marker = L.circleMarker([punkt.lat, punkt.lng], {
@@ -220,4 +231,3 @@
   </script>
 </body>
 </html>
-
