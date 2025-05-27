@@ -54,12 +54,14 @@
       font-size: 0.9rem;
       color: #555;
     }
-  </style>
+  </style> 
 </head>
 <body>
   <div id="map"></div>
   <div id="sidebar">
     <h1>Open Trash Map</h1>
+    <!-- Hier ID hinzugefügt -->
+    <p id="punkteAnzahl">Schon 3 Mülleimer weltweit registriert!</p>
     <button onclick="standortAktualisieren()">📍 Standort aktualisieren</button>
     <button onclick="startRegistrierung()">➕ Neuen Mülleimer registrieren</button>
 
@@ -177,6 +179,7 @@
 
       db.ref("muelleimer").push(neuerMuell);
       zeigeMarker(neuerMuell);
+      aktualisierePunkteAnzahl();
 
       localStorage.setItem("letzteRegistrierung", jetzt.toString());
 
@@ -218,12 +221,21 @@
         `Ausgewählt: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
     });
 
-    // Lade Marker bei Start
+    // Neue Funktion, die Anzahl der Mülleimer abruft und aktualisiert
+    function aktualisierePunkteAnzahl() {
+      db.ref("muelleimer").once("value", snapshot => {
+        const anzahl = snapshot.numChildren();
+        document.getElementById("punkteAnzahl").innerText = `Schon ${anzahl} Mülleimer registriert!`;
+      });
+    }
+
+    // Lade Marker bei Start und aktualisiere Anzeige
     db.ref("muelleimer").once("value", snapshot => {
       snapshot.forEach(child => {
         const punkt = child.val();
         zeigeMarker(punkt);
       });
+      aktualisierePunkteAnzahl();
     });
   </script>
 </body>
