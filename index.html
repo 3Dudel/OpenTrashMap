@@ -5,8 +5,12 @@
   <title>Open Trash Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -60,8 +64,9 @@
   <div id="map"></div>
   <div id="sidebar">
     <h1>Open Trash Map</h1>
-    <!-- Hier ID hinzugefügt -->
+    <p>Registriere und finde Mülleimer überall auf der Welt! Werde zum Umweltheld und kämpfe gegen Verschmutzung!</p>
     <p id="punkteAnzahl">Schon 3 Mülleimer weltweit registriert!</p>
+
     <button onclick="standortAktualisieren()">📍 Standort aktualisieren</button>
     <button onclick="startRegistrierung()">➕ Neuen Mülleimer registrieren</button>
 
@@ -72,9 +77,15 @@
       <button onclick="bestaetigePunkt()">✅ Bestätigen</button>
       <button onclick="abbrechen()">❌ Abbrechen</button>
     </div>
+
+    <button onclick="kopiereLink()">🔗 Link kopieren</button>
+    <div id="bildbereich" style="margin-top: 10px; display: none;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Recycle001.svg/200px-Recycle001.svg.png"
+           alt="Recycling"
+           style="max-width: 100%; border-radius: 8px;">
+    </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCGpCpH_Zbeh1cFKV5a4kKFdDtylDVcfQM",
@@ -93,6 +104,7 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap-Mitwirkende'
     }).addTo(map);
+    L.Control.geocoder({ defaultMarkGeocode: true }).addTo(map);
 
     let registrierungsModus = false;
     let ausgewaehlterLatLng = null;
@@ -165,8 +177,8 @@
       const letzteZeit = localStorage.getItem("letzteRegistrierung");
       const jetzt = Date.now();
 
-      if (letzteZeit && jetzt - parseInt(letzteZeit) < 5 * 60 * 1000) {
-        const verbleibend = Math.ceil((5 * 60 * 1000 - (jetzt - parseInt(letzteZeit))) / 1000);
+      if (letzteZeit && jetzt - parseInt(letzteZeit) < 60 * 1000) {
+        const verbleibend = Math.ceil((60 * 1000 - (jetzt - parseInt(letzteZeit))) / 1000);
         alert(`Bitte warte noch ${verbleibend} Sekunden, bevor du einen weiteren Mülleimer registrierst.`);
         return;
       }
@@ -221,7 +233,6 @@
         `Ausgewählt: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
     });
 
-    // Neue Funktion, die Anzahl der Mülleimer abruft und aktualisiert
     function aktualisierePunkteAnzahl() {
       db.ref("muelleimer").once("value", snapshot => {
         const anzahl = snapshot.numChildren();
@@ -229,7 +240,6 @@
       });
     }
 
-    // Lade Marker bei Start und aktualisiere Anzeige
     db.ref("muelleimer").once("value", snapshot => {
       snapshot.forEach(child => {
         const punkt = child.val();
@@ -237,6 +247,19 @@
       });
       aktualisierePunkteAnzahl();
     });
+
+    function zeigeOderVersteckeBild() {
+      const div = document.getElementById("bildbereich");
+      div.style.display = div.style.display === "none" ? "block" : "none";
+    }
+    function kopiereLink() {
+  const url = "https://3dudel.github.io/OpenTrashMap/";
+  navigator.clipboard.writeText(url)
+    .then(() => alert("Link wurde in die Zwischenablage kopiert!"))
+    .catch(err => alert("Fehler beim Kopieren: " + err));
+   }
+
   </script>
 </body>
 </html>
+
