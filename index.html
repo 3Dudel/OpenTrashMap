@@ -31,6 +31,46 @@
       flex-direction: column;
       gap: 1rem;
     }
+    /* Menü oben rechts */
+    #menu {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+    }
+    #menuToggle {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 1.2rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #dropdown {
+      display: none;
+      position: absolute;
+      top: 40px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      min-width: 180px;
+    }
+    #dropdown button {
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+	  color: black;
+    }
+    #dropdown button:hover {
+      background-color: #f0f0f0;
+    }
+
     h1 {
       margin-top: 0;
       font-size: 1.5rem;
@@ -58,13 +98,24 @@
       font-size: 0.9rem;
       color: #555;
     }
-  </style> 
+  </style>
 </head>
 <body>
+  <!-- Menü oben rechts -->
+  <div id="menu">
+    <button id="menuToggle">☰ Menü</button>
+    <div id="dropdown">
+      <button onclick="standortAktualisieren()">📍 Standort aktualisieren</button>
+      <button onclick="startRegistrierung()">➕ Mülleimer registrieren</button>
+      <button onclick="kopiereLink()">🔗 Website teilen</button>
+	  <button onclick="window.open('https://3dudel.github.io/Externe-Dienste/', '_blank')">🔐 Datenschutz</button>
+      <button onclick="window.open('https://github.com/3Dudel/OpenTrashMap/blob/main/README.md', '_blank')">💡 Info</button>
+    </div>
+  </div>
+
   <div id="map"></div>
   <div id="sidebar">
-    <img src="logo.png" alt="Open Trash Map" width="150" height="100">
-    
+    <img src="logo.png" alt="Open Trash Map" width="150" height="100"> 
     <p>Registriere und finde Mülleimer überall auf der Welt! Werde zum Umweltheld und kämpfe gegen Verschmutzung!</p>
     <p id="punkteAnzahl">Schon 3 Mülleimer weltweit registriert!</p>
 
@@ -79,15 +130,16 @@
       <button onclick="abbrechen()">❌ Abbrechen</button>
     </div>
 
-    <button onclick="kopiereLink()">🔗 Link kopieren</button>
-    <div id="bildbereich" style="margin-top: 10px; display: none;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Recycle001.svg/200px-Recycle001.svg.png"
-           alt="Recycling"
-           style="max-width: 100%; border-radius: 8px;">
-    </div>
   </div>
 
   <script>
+    // Menü-Dropdown steuern
+    const menuToggle = document.getElementById('menuToggle');
+    const dropdown = document.getElementById('dropdown');
+    menuToggle.addEventListener('click', () => {
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
+
     const firebaseConfig = {
       apiKey: "AIzaSyCGpCpH_Zbeh1cFKV5a4kKFdDtylDVcfQM",
       authDomain: "open-trash-map.firebaseapp.com",
@@ -253,14 +305,12 @@
       const div = document.getElementById("bildbereich");
       div.style.display = div.style.display === "none" ? "block" : "none";
     }
-    function kopiereLink() {
+	    function kopiereLink() {
   const url = "https://3dudel.github.io/OpenTrashMap/";
   navigator.clipboard.writeText(url)
     .then(() => alert("Link wurde in die Zwischenablage kopiert!"))
     .catch(err => alert("Fehler beim Kopieren: " + err));
    }
-
   </script>
 </body>
 </html>
-
